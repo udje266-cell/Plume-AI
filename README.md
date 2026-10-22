@@ -36,7 +36,7 @@ L’agent reçoit tous les chapitres et les fiches à chaque demande, avec une l
 
 ## Modifier
 
-Modifier les fichiers de `src/`, puis arrêter et relancer `npm start` : la commande régénère `worker/index.js` avant de lancer le serveur. Pour publier : `npm run build` puis `npm run validate`. `npm run format` remet en forme le code avec Prettier. Le modèle se règle dans « Connexion IA ».
+Modifier les fichiers de `src/`, puis arrêter et relancer `npm start` : la commande régénère `worker/index.js` avant de lancer le serveur. Pour publier : `npm run build` puis `npm run validate`. `npm run format` remet en forme le code avec Prettier. `npm test` lance les tests automatiques (`test/`), qui simulent OpenAI : aucune clé ni aucun appel payant n’est nécessaire. Ils tournent aussi sur GitHub à chaque push (`.github/workflows/test.yml`), avec une vérification que `worker/index.js` a bien été régénéré. Le modèle se règle dans « Connexion IA ».
 
 ## Hébergement
 

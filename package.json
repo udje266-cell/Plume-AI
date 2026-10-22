@@ -11,6 +11,7 @@
     "start": "node scripts/bundle.mjs && node dev-server.mjs",
     "build": "node scripts/bundle.mjs && bash scripts/build.sh",
     "validate": "node scripts/validate-artifact.mjs",
-    "format": "prettier --write src scripts"
+    "format": "prettier --write src scripts",
+    "test": "node --test"
   }
 }
