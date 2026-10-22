@@ -16,7 +16,7 @@ http.createServer(async (incoming, outgoing) => {
       parts.push(part);
     }
     const body = Buffer.concat(parts);
-    const request = new Request(new URL(incoming.url, `http://${host}:${port}`), {
+    const request = new Request(new URL(incoming.url, `http://${incoming.headers.host || `${host}:${port}`}`), {
       method: incoming.method,
       headers: incoming.headers,
       ...(!['GET', 'HEAD'].includes(incoming.method) ? { body } : {}),
