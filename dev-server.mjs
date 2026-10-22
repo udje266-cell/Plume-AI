@@ -28,7 +28,11 @@ http
           ...(!["GET", "HEAD"].includes(incoming.method) ? { body } : {}),
         },
       );
-      const response = await app.fetch(request, {}, {});
+      const response = await app.fetch(
+        request,
+        { APP_PASSWORD: process.env.APP_PASSWORD },
+        {},
+      );
       outgoing.writeHead(response.status, Object.fromEntries(response.headers));
       if (response.body)
         for await (const chunk of response.body) outgoing.write(chunk);

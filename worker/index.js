@@ -27,6 +27,35 @@ function sseToText() {
   });
 }
 
+// Compare deux chaînes en temps constant (via leurs empreintes SHA-256).
+async function sameSecret(a, b) {
+  const digest = async (s) =>
+    new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(s)),
+    );
+  const [x, y] = await Promise.all([digest(a), digest(b)]);
+  let diff = 0;
+  for (let i = 0; i < x.length; i++) diff |= x[i] ^ y[i];
+  return diff === 0;
+}
+
+// Si APP_PASSWORD est défini (secret Cloudflare), tout le site demande ce mot de passe.
+// Le nom d’utilisateur est libre. L’icône et le manifeste restent publics.
+async function authorized(request, env) {
+  if (!env?.APP_PASSWORD) return true;
+  const header = request.headers.get("Authorization") || "";
+  if (!header.startsWith("Basic ")) return false;
+  try {
+    const decoded = new TextDecoder().decode(
+      Uint8Array.from(atob(header.slice(6)), (c) => c.charCodeAt(0)),
+    );
+    const password = decoded.slice(decoded.indexOf(":") + 1);
+    return await sameSecret(password, env.APP_PASSWORD);
+  } catch {
+    return false;
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -59,6 +88,15 @@ export default {
         '{"id": "/", "name": "Plume AI", "short_name": "Plume AI", "start_url": "/", "display": "standalone", "background_color": "#f6f4ef", "theme_color": "#344c3e", "icons": [{"src": "/icon.png", "sizes": "1254x1254", "type": "image/png", "purpose": "any"}]}',
         { headers: { "Content-Type": "application/manifest+json" } },
       );
+    if (!(await authorized(request, env)))
+      return new Response("Mot de passe requis.", {
+        status: 401,
+        headers: {
+          ...headers,
+          "Content-Type": "text/plain; charset=utf-8",
+          "WWW-Authenticate": 'Basic realm="Plume AI", charset="UTF-8"',
+        },
+      });
     if (url.pathname === "/api/connection") {
       if (request.method !== "POST")
         return json({ error: "Méthode non autorisée" }, 405);

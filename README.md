@@ -42,6 +42,23 @@ Modifier les fichiers de `src/`, puis arrêter et relancer `npm start` : la comm
 
 Le Worker s’exécute dans un environnement compatible avec les Web APIs, notamment Cloudflare Workers. Les scripts de construction préparent un artefact pour Sites. L’accès privé de la version publiée est assuré par Sites : il n’est pas implémenté dans le code du Worker. Un hébergement public ailleurs nécessite d’ajouter une authentification et des limites d’usage adaptées.
 
+## Hébergement sur Cloudflare (avec mot de passe)
+
+Le fichier `wrangler.toml` permet de publier Plume sur Cloudflare Workers (offre gratuite suffisante).
+
+1. Créer un compte sur https://dash.cloudflare.com (gratuit).
+2. Dans le dossier du projet, se connecter : `npx wrangler@4 login` (ouvre le navigateur).
+3. Définir le mot de passe du site : `npx wrangler@4 secret put APP_PASSWORD`, puis taper le mot de passe. Choisir une phrase longue (au moins 16 caractères) : il n’y a pas de limite du nombre d’essais dans le code.
+4. Publier : `npm run deploy`. Wrangler affiche l’adresse du site, du type `https://plume-ai.<ton-compte>.workers.dev`.
+
+À l’ouverture, le navigateur demande un identifiant et un mot de passe : l’identifiant est libre, le mot de passe est celui de l’étape 3. Pour changer le mot de passe, refaire l’étape 3 (pas besoin de republier). Pour publier une nouvelle version, relancer `npm run deploy`.
+
+**Important** : sans `APP_PASSWORD`, le site publié est ouvert à tous. Recommandé en plus : dans le tableau de bord Cloudflare, ajouter une règle de limitation de débit (*Security → WAF → Rate limiting rules*) sur le site, par exemple 30 requêtes par minute et par adresse IP, pour freiner les essais de mot de passe.
+
+En local, `npm start` reste sans mot de passe. Pour tester la protection : `APP_PASSWORD=essai npm start`.
+
+Les écrits sont stockés dans le navigateur, pour chaque adresse : exporter le JSON depuis l’ancien site et l’importer dans le nouveau.
+
 ## Vérification de cette livraison
 
 Source du Worker identique à la version publiée. Syntaxe Node.js vérifiée ; serveur local testé sur la page d’accueil et la validation de connexion. L’analyse avec une vraie clé API n’a pas été testée dans cette livraison.
