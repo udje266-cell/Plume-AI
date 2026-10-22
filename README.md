@@ -14,11 +14,13 @@ Aucune dépendance npm à installer. Le serveur local écoute uniquement sur ton
 
 ## Fichiers
 
-- `worker/index.js` : **source complète de l’application publiée**. La constante `PAGE` contient le HTML, le CSS et le JavaScript du navigateur. L’export `fetch` contient les routes du serveur.
-- `interface.html` : copie extraite de l’interface, plus facile à lire. Elle sert à consulter le code ; modifier ce fichier seul ne modifie pas l’application. Les appels IA nécessitent le serveur.
+- `src/client/index.html`, `src/client/style.css`, `src/client/app.js` : l’interface (HTML, CSS, JavaScript du navigateur).
+- `src/server.js` : les routes du serveur (`/api/connection`, `/api/agent`, icône, manifeste).
+- `assets/plume-ai-icon.png` : l’icône, embarquée dans le Worker et servie sur `/icon.png`.
+- `scripts/bundle.mjs` : assemble `src/` et l’icône en un seul fichier, `worker/index.js`.
+- `worker/index.js` : **fichier généré**, ne pas le modifier à la main. C’est lui qui est publié.
 - `dev-server.mjs` : adaptateur Node.js pour lancer le Worker sur ton ordinateur.
-- `package.json` : commandes du projet.
-- `scripts/build.sh` : création de l’artefact Sites (nécessite Bash).
+- `scripts/build.sh` : création de l’artefact Sites dans `dist/` (nécessite Bash).
 - `scripts/validate-artifact.mjs` : validation de l’artefact.
 - `.openai/hosting.json` : configuration du site existant. L’identifiant est public, sans clé secrète. Ce fichier ne constitue pas une autorisation de publication.
 
@@ -28,13 +30,13 @@ Aucune dépendance npm à installer. Le serveur local écoute uniquement sur ton
 
 Les écrits sont conservés dans le `localStorage` du navigateur, pour chaque adresse du site. Le projet du site publié n’apparaît donc pas automatiquement à l’adresse locale : exporter le JSON depuis le site et l’importer localement pour le transférer.
 
-La clé API reste en mémoire dans l’onglet et disparaît au rechargement. Elle transite vers le serveur puis vers l’API OpenAI lors des demandes. La route `/api/connection` vérifie la clé et l’accès au modèle ; elle ne confirme pas le crédit disponible. La route `/api/agent` effectue l’analyse via Chat Completions. Les appels sont facturés séparément par OpenAI.
+La clé API reste en mémoire dans l’onglet et disparaît au rechargement, sauf si « Mémoriser la clé dans ce navigateur » est cochée : elle est alors enregistrée en clair dans le `localStorage` (décocher l’efface). Elle transite vers le serveur puis vers l’API OpenAI lors des demandes. La route `/api/connection` vérifie la clé et l’accès au modèle ; elle ne confirme pas le crédit disponible. La route `/api/agent` effectue l’analyse via Chat Completions. Les appels sont facturés séparément par OpenAI.
 
-L’agent reçoit tous les chapitres et les fiches à chaque demande, avec une limite de contexte de 180 000 caractères dans cette version. Il produit des propositions sans modifier le manuscrit automatiquement. Il n’y a pas de boucle d’outils autonome ni de base de données distante dans cette version.
+L’agent reçoit tous les chapitres et les fiches à chaque demande, avec une limite de contexte de 200 000 octets UTF-8 (environ 190 000 caractères), mesurée de la même façon dans le navigateur et sur le serveur. La réponse s’affiche progressivement (streaming). Il produit des propositions sans modifier le manuscrit automatiquement. Il n’y a pas de boucle d’outils autonome ni de base de données distante dans cette version.
 
 ## Modifier
 
-Modifier `worker/index.js`, puis arrêter et relancer `npm start` pour recharger le serveur local. Le modèle se règle dans « Connexion IA ».
+Modifier les fichiers de `src/`, puis arrêter et relancer `npm start` : la commande régénère `worker/index.js` avant de lancer le serveur. Pour publier : `npm run build` puis `npm run validate`. `npm run format` remet en forme le code avec Prettier. `npm test` lance les tests automatiques (`test/`), qui simulent OpenAI : aucune clé ni aucun appel payant n’est nécessaire. Ils tournent aussi sur GitHub à chaque push (`.github/workflows/test.yml`), avec une vérification que `worker/index.js` a bien été régénéré. Le modèle se règle dans « Connexion IA ».
 
 ## Hébergement
 

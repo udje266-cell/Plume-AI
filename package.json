@@ -7,8 +7,11 @@
     "node": ">=22"
   },
   "scripts": {
-    "start": "node dev-server.mjs",
-    "build": "bash scripts/build.sh",
-    "validate": "node scripts/validate-artifact.mjs"
+    "bundle": "node scripts/bundle.mjs",
+    "start": "node scripts/bundle.mjs && node dev-server.mjs",
+    "build": "node scripts/bundle.mjs && bash scripts/build.sh",
+    "validate": "node scripts/validate-artifact.mjs",
+    "format": "prettier --write src scripts",
+    "test": "node --test"
   }
 }
