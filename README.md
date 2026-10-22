@@ -14,11 +14,13 @@ Aucune dépendance npm à installer. Le serveur local écoute uniquement sur ton
 
 ## Fichiers
 
-- `worker/index.js` : **source complète de l’application publiée**. La constante `PAGE` contient le HTML, le CSS et le JavaScript du navigateur. L’export `fetch` contient les routes du serveur.
-- `interface.html` : copie extraite de l’interface, plus facile à lire. Elle sert à consulter le code ; modifier ce fichier seul ne modifie pas l’application. Les appels IA nécessitent le serveur.
+- `src/client/index.html`, `src/client/style.css`, `src/client/app.js` : l’interface (HTML, CSS, JavaScript du navigateur).
+- `src/server.js` : les routes du serveur (`/api/connection`, `/api/agent`, icône, manifeste).
+- `assets/plume-ai-icon.png` : l’icône, embarquée dans le Worker et servie sur `/icon.png`.
+- `scripts/bundle.mjs` : assemble `src/` et l’icône en un seul fichier, `worker/index.js`.
+- `worker/index.js` : **fichier généré**, ne pas le modifier à la main. C’est lui qui est publié.
 - `dev-server.mjs` : adaptateur Node.js pour lancer le Worker sur ton ordinateur.
-- `package.json` : commandes du projet.
-- `scripts/build.sh` : création de l’artefact Sites (nécessite Bash).
+- `scripts/build.sh` : création de l’artefact Sites dans `dist/` (nécessite Bash).
 - `scripts/validate-artifact.mjs` : validation de l’artefact.
 - `.openai/hosting.json` : configuration du site existant. L’identifiant est public, sans clé secrète. Ce fichier ne constitue pas une autorisation de publication.
 
@@ -34,7 +36,7 @@ L’agent reçoit tous les chapitres et les fiches à chaque demande, avec une l
 
 ## Modifier
 
-Modifier `worker/index.js`, puis arrêter et relancer `npm start` pour recharger le serveur local. Le modèle se règle dans « Connexion IA ».
+Modifier les fichiers de `src/`, puis arrêter et relancer `npm start` : la commande régénère `worker/index.js` avant de lancer le serveur. Pour publier : `npm run build` puis `npm run validate`. `npm run format` remet en forme le code avec Prettier. Le modèle se règle dans « Connexion IA ».
 
 ## Hébergement
 

@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="fr">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  /><title>Plume AI — Atelier du romancier</title
+  ><link rel="icon" type="image/png" href="/icon.png" /><link
+    rel="apple-touch-icon"
+    href="/icon.png"
+  /><link rel="manifest" href="/manifest.webmanifest" /><meta
+    name="theme-color"
+    content="#344c3e"
+  /><link rel="stylesheet" href="style.css" />
+  <aside>
+    <div class="brand">
+      <img
+        src="/icon.png"
+        alt=""
+        width="38"
+        height="38"
+        style="border-radius: 10px; vertical-align: middle; margin-right: 8px"
+      />Plume <span style="font: 15px system-ui; color: #667b5e">AI</span>
+    </div>
+    <div class="tag">L'ATELIER DU ROMANCIER</div>
+    <nav>
+      <button data-tab="atelier" class="active">✎ &nbsp; Mon atelier</button
+      ><button data-tab="univers">◈ &nbsp; Bible d’univers</button
+      ><button data-tab="agent">✧ &nbsp; Agent d’écriture</button
+      ><button data-tab="sauvegardes">↗ &nbsp; Sauvegardes</button>
+    </nav>
+    <div class="foot">
+      UNE HISTOIRE À LA FOIS<br />Ton imagination.<br />Un espace pour lui
+      donner vie.
+      <hr style="border: 0; border-top: 1px solid #d9ddce" />
+      <button id="settings">⚙ Connexion IA</button>
+    </div>
+  </aside>
+  <main>
+    <header class="top">
+      <span
+        >Mon espace <span class="muted"> / </span>
+        <b id="projectLabel">Mon roman</b></span
+      >
+      <div class="row">
+        <span id="notice">Sauvegarde locale activée</span
+        ><button id="settingsTop">Connexion IA</button>
+      </div>
+    </header>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">Ton prochain chapitre commence ici</div>
+        <h1>Fais grandir ton histoire.</h1>
+        <p>Écris librement. Garde le fil de ton univers.</p>
+      </div>
+      <span class="pill">✦ L’auteur, c’est toi.</span>
+    </section>
+    <section id="atelier" class="section visible">
+      <div class="layout">
+        <div>
+          <div class="card">
+            <div class="row">
+              <span class="eyebrow">Manuscrit</span
+              ><button id="newChapter">+ Nouveau chapitre</button>
+            </div>
+            <label for="title">Titre du chapitre</label
+            ><input id="title" placeholder="Un nouveau commencement" /><textarea
+              id="editor"
+              placeholder="Tout commence par une première phrase…"
+            ></textarea>
+            <div class="row muted">
+              <span id="wordCount">0 mot</span
+              ><span>Enregistrement automatique</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Les chapitres</h3>
+            <div id="chapterList"></div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <span class="eyebrow">Ton partenaire d’écriture</span>
+            <h2>Un regard sur ton récit.</h2>
+            <p class="muted">
+              L’agent consulte le chapitre ouvert, les autres chapitres et ta
+              bible d’univers.
+            </p>
+            <div class="actions">
+              <button data-task="coherence">
+                ◈ Vérifier la cohérence<small
+                  >Personnages, chronologie et règles de l’univers</small
+                ></button
+              ><button data-task="style">
+                ✎ Améliorer un passage<small
+                  >Des propositions qui préservent ta voix</small
+                ></button
+              ><button data-task="ideas">
+                ✧ Débloquer l’inspiration<small
+                  >Trois pistes, sans les ajouter au canon</small
+                >
+              </button>
+            </div>
+            <div class="note">
+              Les suggestions restent des suggestions. Aucun texte n’est
+              remplacé automatiquement.
+            </div>
+          </div>
+          <div class="card">
+            <h3>Ton roman, en quelques mots</h3>
+            <label for="projectName">Titre du projet</label
+            ><input id="projectName" /><label for="synopsis"
+              >Intention & résumé</label
+            ><textarea
+              id="synopsis"
+              rows="4"
+              placeholder="Le cœur de ton histoire, son ambiance, ses enjeux…"
+            ></textarea>
+            <div class="stats">
+              <div>
+                <strong id="chapterStat">1</strong><span>chapitre(s)</span>
+              </div>
+              <div>
+                <strong id="totalStat">0</strong><span>mots écrits</span>
+              </div>
+              <div>
+                <strong id="canonStat">0</strong><span>fiches d’univers</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="univers" class="section">
+      <div class="card">
+        <div class="row">
+          <div>
+            <span class="eyebrow">La mémoire de ton histoire</span>
+            <h2>Bible d’univers</h2>
+          </div>
+          <button id="addEntity" class="primary">+ Ajouter une fiche</button>
+        </div>
+        <p class="muted">
+          Définis les faits validés et distingue-les des idées en cours.
+        </p>
+        <div id="entities"></div>
+      </div>
+    </section>
+    <section id="agent" class="section">
+      <div class="layout">
+        <div class="card">
+          <span class="eyebrow">Agent Plume AI</span>
+          <h2>Explorons ton histoire.</h2>
+          <label for="question">Ta demande</label
+          ><textarea
+            id="question"
+            rows="5"
+            placeholder="Vérifie si la réaction de mon personnage respecte sa personnalité…"
+          ></textarea>
+          <div class="row" style="margin: 15px 0">
+            <span class="muted">Contexte : manuscrit + bible</span
+            ><button id="ask" class="primary">Envoyer à l’agent ↗</button>
+          </div>
+          <div class="note" id="connectionState">
+            Connexion IA requise. Ajoute ta clé dans les paramètres.
+          </div>
+        </div>
+        <div class="card">
+          <div class="row">
+            <h3>Le regard de Plume AI</h3>
+            <button id="copy">Copier</button>
+          </div>
+          <div id="output" class="output">
+            Les analyses et suggestions de l’agent apparaîtront ici.
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="sauvegardes" class="section">
+      <div class="card">
+        <span class="eyebrow">Ton histoire t’appartient</span>
+        <h2>Garde une copie de tes écrits.</h2>
+        <p>
+          Les données sont enregistrées dans ce navigateur, sur cet appareil.
+          Exporte régulièrement ton projet pour le conserver ou le transférer.
+        </p>
+        <div class="row" style="justify-content: flex-start; flex-wrap: wrap">
+          <button id="exportProject" class="primary">
+            Exporter le projet (.json)</button
+          ><button id="exportText">Exporter le manuscrit (.txt)</button
+          ><button id="importProject">Importer une sauvegarde</button
+          ><button id="importText">Importer un chapitre (.txt)</button>
+        </div>
+        <p class="muted">
+          L’import de sauvegarde remplace le projet après confirmation. Les
+          chapitres .txt sont ajoutés au manuscrit.
+        </p>
+        <input type="file" id="file" class="hidden" accept=".json,.txt" />
+      </div>
+    </section>
+  </main>
+  <dialog id="config">
+    <h2>Connecter ton agent</h2>
+    <p>
+      Plume utilise l’API OpenAI pour analyser tes textes. L’abonnement ChatGPT
+      ne couvre pas ces appels : l’utilisation de l’API est facturée séparément
+      par ton fournisseur.
+    </p>
+    <label for="apiKey">Clé API OpenAI</label
+    ><input
+      id="apiKey"
+      type="password"
+      autocomplete="off"
+      placeholder="sk-…"
+    /><label for="model">Modèle</label><input id="model" value="gpt-4.1-mini" />
+    <p class="note">
+      La clé reste en mémoire pour cette session ; elle n’est pas enregistrée.
+      Lors d’une demande, elle transite par le serveur vers OpenAI, avec tes
+      chapitres et tes fiches. Aucun appel sans ton clic.
+    </p>
+    <p id="configStatus" role="status" aria-live="polite"></p>
+    <div class="row">
+      <button id="closeConfig">Fermer</button
+      ><button id="saveConfig" class="primary">Tester et activer</button>
+    </div>
+  </dialog>
+  <dialog id="entityDialog">
+    <h2>Une nouvelle fiche</h2>
+    <label for="entityName">Nom</label><input id="entityName" /><label
+      for="entityType"
+      >Type</label
+    ><select id="entityType">
+      <option>Personnage</option>
+      <option>Lieu</option>
+      <option>Règle / pouvoir</option>
+      <option>Chronologie</option></select
+    ><label for="entityStatus">Statut</label
+    ><select id="entityStatus">
+      <option>Validé — canon</option>
+      <option>Idée à explorer</option></select
+    ><label for="entityBody">Description et faits à retenir</label
+    ><textarea id="entityBody" rows="5"></textarea>
+    <div class="row">
+      <button id="cancelEntity">Annuler</button
+      ><button id="saveEntity" class="primary">Enregistrer</button>
+    </div>
+  </dialog>
+  <script src="app.js"></script>
+</html>
