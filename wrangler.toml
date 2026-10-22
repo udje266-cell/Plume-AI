@@ -1,0 +1,7 @@
+# Déploiement Cloudflare Workers. Voir « Hébergement sur Cloudflare » dans le README.
+name = "plume-ai"
+main = "worker/index.js"
+compatibility_date = "2026-10-01"
+
+[build]
+command = "node scripts/bundle.mjs"
