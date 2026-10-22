@@ -258,6 +258,14 @@ label {
   display: block;
   margin: 15px 0 6px;
 }
+.check {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.check input {
+  width: auto;
+}
 .hidden {
   display: none;
 }

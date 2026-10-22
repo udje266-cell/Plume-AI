@@ -30,9 +30,9 @@ Aucune dépendance npm à installer. Le serveur local écoute uniquement sur ton
 
 Les écrits sont conservés dans le `localStorage` du navigateur, pour chaque adresse du site. Le projet du site publié n’apparaît donc pas automatiquement à l’adresse locale : exporter le JSON depuis le site et l’importer localement pour le transférer.
 
-La clé API reste en mémoire dans l’onglet et disparaît au rechargement. Elle transite vers le serveur puis vers l’API OpenAI lors des demandes. La route `/api/connection` vérifie la clé et l’accès au modèle ; elle ne confirme pas le crédit disponible. La route `/api/agent` effectue l’analyse via Chat Completions. Les appels sont facturés séparément par OpenAI.
+La clé API reste en mémoire dans l’onglet et disparaît au rechargement, sauf si « Mémoriser la clé dans ce navigateur » est cochée : elle est alors enregistrée en clair dans le `localStorage` (décocher l’efface). Elle transite vers le serveur puis vers l’API OpenAI lors des demandes. La route `/api/connection` vérifie la clé et l’accès au modèle ; elle ne confirme pas le crédit disponible. La route `/api/agent` effectue l’analyse via Chat Completions. Les appels sont facturés séparément par OpenAI.
 
-L’agent reçoit tous les chapitres et les fiches à chaque demande, avec une limite de contexte de 180 000 caractères dans cette version. Il produit des propositions sans modifier le manuscrit automatiquement. Il n’y a pas de boucle d’outils autonome ni de base de données distante dans cette version.
+L’agent reçoit tous les chapitres et les fiches à chaque demande, avec une limite de contexte de 200 000 octets UTF-8 (environ 190 000 caractères), mesurée de la même façon dans le navigateur et sur le serveur. La réponse s’affiche progressivement (streaming). Il produit des propositions sans modifier le manuscrit automatiquement. Il n’y a pas de boucle d’outils autonome ni de base de données distante dans cette version.
 
 ## Modifier
 

@@ -1,4 +1,29 @@
 // Routes du Worker. PAGE (interface) et ICON (base64) sont injectées par scripts/bundle.mjs.
+// Le contexte (chapitres + fiches) est mesuré en octets UTF-8, comme dans le navigateur.
+const MAX_CONTEXT_BYTES = 200000;
+const MAX_AGENT_BYTES = MAX_CONTEXT_BYTES + 40000;
+
+// Convertit le flux SSE de Chat Completions en texte brut.
+function sseToText() {
+  let buffer = "";
+  return new TransformStream({
+    transform(chunk, controller) {
+      buffer += chunk;
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue;
+        const data = line.slice(5).trim();
+        if (data === "[DONE]") continue;
+        try {
+          const delta = JSON.parse(data).choices?.[0]?.delta?.content;
+          if (delta) controller.enqueue(delta);
+        } catch {}
+      }
+    },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -121,12 +146,13 @@ export default {
       if (request.method !== "POST")
         return json({ error: "Méthode non autorisée" }, 405);
       if (!sameOrigin()) return json({ error: "Origine non autorisée" }, 403);
-      if (Number(request.headers.get("content-length")) > 240000)
+      if (Number(request.headers.get("content-length")) > MAX_AGENT_BYTES)
         return json({ error: "Requête trop volumineuse" }, 413);
       try {
-        const raw = await request.text();
-        if (raw.length > 240000)
+        const bytes = await request.arrayBuffer();
+        if (bytes.byteLength > MAX_AGENT_BYTES)
           return json({ error: "Requête trop volumineuse" }, 413);
+        const raw = new TextDecoder().decode(bytes);
         const b = JSON.parse(raw);
         if (
           typeof b.key !== "string" ||
@@ -138,7 +164,8 @@ export default {
           !b.question.trim() ||
           b.question.length > 8000 ||
           !b.context ||
-          JSON.stringify(b.context).length > 180000
+          new TextEncoder().encode(JSON.stringify(b.context)).length >
+            MAX_CONTEXT_BYTES
         )
           return json({ error: "Demande invalide ou trop longue." }, 400);
         const response = await fetch(
@@ -167,11 +194,14 @@ export default {
                 },
               ],
               max_completion_tokens: 3500,
+              stream: true,
             }),
-            signal: AbortSignal.timeout(90000),
+            signal: AbortSignal.timeout(300000),
           },
         );
-        const result = await response.json();
+        const result = response.ok
+          ? null
+          : await response.json().catch(() => ({}));
         if (!response.ok)
           return json(
             {
@@ -190,13 +220,18 @@ export default {
             },
             response.status === 401 ? 401 : 502,
           );
-        const text = result.choices?.[0]?.message?.content;
-        if (!text)
-          return json(
-            { error: "Le service IA a renvoyé une réponse vide." },
-            502,
-          );
-        return json({ text });
+        return new Response(
+          response.body
+            .pipeThrough(new TextDecoderStream())
+            .pipeThrough(sseToText())
+            .pipeThrough(new TextEncoderStream()),
+          {
+            headers: {
+              ...headers,
+              "Content-Type": "text/plain; charset=utf-8",
+            },
+          },
+        );
       } catch {
         return json(
           { error: "L’analyse a échoué ou le délai a été dépassé. Réessaie." },

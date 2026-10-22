@@ -212,8 +212,14 @@
       autocomplete="off"
       placeholder="sk-…"
     /><label for="model">Modèle</label><input id="model" value="gpt-4.1-mini" />
+    <label class="check" for="rememberKey"
+      ><input type="checkbox" id="rememberKey" /> Mémoriser la clé dans ce
+      navigateur</label
+    >
     <p class="note">
-      La clé reste en mémoire pour cette session ; elle n’est pas enregistrée.
+      Par défaut, la clé reste en mémoire pour cette session seulement. Si tu
+      choisis de la mémoriser, elle est enregistrée en clair dans ce navigateur
+      : ne le fais pas sur un ordinateur partagé. Décocher la case l’efface.
       Lors d’une demande, elle transite par le serveur vers OpenAI, avec tes
       chapitres et tes fiches. Aucun appel sans ton clic.
     </p>

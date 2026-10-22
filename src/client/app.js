@@ -184,6 +184,32 @@ $("#saveEntity").onclick = () => {
   (id) => ($("#" + id).onclick = () => $("#config").showModal()),
 );
 $("#closeConfig").onclick = () => $("#config").close();
+const KEY_STORE = "plume-api-key";
+function showConnected() {
+  $("#connectionState").textContent =
+    "Clé et accès au modèle vérifiés · " + model;
+  $("#settingsTop").textContent = "✓ IA connectée";
+}
+function rememberKey() {
+  try {
+    if ($("#rememberKey").checked)
+      localStorage.setItem(KEY_STORE, JSON.stringify({ key, model }));
+    else localStorage.removeItem(KEY_STORE);
+  } catch {}
+}
+try {
+  const saved = JSON.parse(localStorage.getItem(KEY_STORE));
+  if (saved?.key && saved?.model) {
+    key = saved.key;
+    model = saved.model;
+    $("#model").value = model;
+    $("#rememberKey").checked = true;
+    showConnected();
+  }
+} catch {}
+$("#rememberKey").onchange = () => {
+  if (!$("#rememberKey").checked) rememberKey();
+};
 $("#saveConfig").onclick = async () => {
   const candidate = $("#apiKey").value.trim() || key;
   const selected = $("#model").value.trim();
@@ -207,10 +233,9 @@ $("#saveConfig").onclick = async () => {
     key = candidate;
     model = selected;
     $("#apiKey").value = "";
+    rememberKey();
     status.textContent = "Connexion vérifiée. Tu peux lancer une analyse.";
-    $("#connectionState").textContent =
-      "Clé et accès au modèle vérifiés · " + model;
-    $("#settingsTop").textContent = "✓ IA connectée";
+    showConnected();
     $("#notice").textContent = "Connexion vérifiée — lance une analyse";
     $("#config").close();
     tab("agent");
@@ -265,12 +290,13 @@ async function run() {
   let q = $("#question").value.trim();
   if (!q) return;
   let context = { ...data, chapterOpened: current };
-  if (JSON.stringify(context).length > 180000) {
+  if (new Blob([JSON.stringify(context)]).size > 200000) {
     $("#output").textContent =
-      "Le manuscrit dépasse la limite de cette version (180 000 caractères). Travaille sur un projet plus court.";
+      "Le manuscrit dépasse la limite de cette version (environ 190 000 caractères). Travaille sur un projet plus court.";
     return;
   }
   busy = true;
+  let text = "";
   $("#ask").disabled = true;
   $("#ask").textContent = "Analyse en cours…";
   $("#output").textContent =
@@ -281,11 +307,23 @@ async function run() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ key, model, question: q, context }),
     });
-    let j = await readJson(r);
-    if (!r.ok) throw Error(j.error || "Erreur du service IA.");
-    $("#output").textContent = j.text;
+    if (!r.ok)
+      throw Error((await readJson(r)).error || "Erreur du service IA.");
+    const out = $("#output"),
+      reader = r.body.pipeThrough(new TextDecoderStream()).getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!text) out.textContent = "";
+      text += value;
+      out.textContent = text;
+    }
+    if (!text.trim())
+      out.textContent = "Le service IA a renvoyé une réponse vide.";
   } catch (e) {
-    $("#output").textContent = e.message;
+    $("#output").textContent = text
+      ? text + "\n\n[Réponse interrompue : " + e.message + "]"
+      : e.message;
   } finally {
     busy = false;
     $("#ask").disabled = false;
